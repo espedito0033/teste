@@ -23,13 +23,15 @@
 
 <script>
     function abrirTikTok() {
-        let user = document.getElementById('username').value;
-        // Remove o @ caso o usuário tenha colocado
-        user = user.replace('@', '');
+        let inputField = document.getElementById('username');
+        let user = inputField.value.replace('@', '');
         
         if (user) {
-            // Este link força o sistema operacional a abrir no App do TikTok
+            // Abre o perfil
             window.location.href = "https://www.tiktok.com/@" + user;
+            
+            // Limpa o campo após o clique
+            inputField.value = '';
         } else {
             alert("Por favor, digite o nome de usuário.");
         }
