@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir Perfil TikTok</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        input { padding: 10px; width: 200px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background-color: #000; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Abrir TikTok</h2>
+    <input type="text" id="username" placeholder="Ex: @usuario">
+    <br>
+    <button onclick="abrirTikTok()">Ver Perfil</button>
+</div>
+
+<script>
+    function abrirTikTok() {
+        let user = document.getElementById('username').value;
+        // Remove o @ caso o usuário tenha colocado
+        user = user.replace('@', '');
+        
+        if (user) {
+            // Este link força o sistema operacional a abrir no App do TikTok
+            window.location.href = "https://www.tiktok.com/@" + user;
+        } else {
+            alert("Por favor, digite o nome de usuário.");
+        }
+    }
+</script>
+
+</body>
+</html>
