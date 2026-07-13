@@ -1,311 +1,165 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comando Remoto · TikTok</title>
-  <style>
-    :root {
-      --bg: #0f0f1a;
-      --accent: #ff0050;
-      --accent2: #00d4ff;
-      --text: #ffffff;
-      --muted: #a0a0c0;
-      --card: rgba(255, 255, 255, 0.04);
-      --border: rgba(255, 255, 255, 0.08);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: radial-gradient(ellipse at top left, #1a1a2e 0%, #0f0f1a 60%);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .container {
-      max-width: 520px;
-      width: 100%;
-      text-align: center;
-    }
-    .logo {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-    }
-    .logo span { color: var(--accent); }
-    .subtitle {
-      color: var(--muted);
-      font-size: 15px;
-      margin-bottom: 28px;
-    }
-    .status-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 16px;
-      backdrop-filter: blur(10px);
-    }
-    .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 0;
-    }
-    .status-row + .status-row { border-top: 1px solid var(--border); }
-    .status-label {
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .status-value {
-      font-size: 14px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #555;
-      transition: background 0.3s;
-    }
-    .dot.online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-    .dot.offline { background: #ef4444; }
-    .dot.waiting { background: var(--accent2); animation: pulse 1.2s infinite; }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--accent2); }
-      50% { opacity: 0.4; box-shadow: 0 0 12px var(--accent2); }
-    }
-    .command-display {
-      font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
-      font-size: 18px;
-      color: var(--accent2);
-      word-break: break-all;
-    }
-    .command-display.empty { color: var(--muted); }
-    .footer {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 20px;
-      line-height: 1.6;
-    }
-    .error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 13px;
-      margin-top: 16px;
-      display: none;
-    }
-    .note {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 16px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 8px;
-      border-left: 3px solid var(--accent2);
-      text-align: left;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir Perfil TikTok</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2 { margin-bottom: 1rem; }
+        input {
+            padding: 10px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background-color: #333; }
+        #status {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+        #log {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #999;
+            font-family: Consolas, monospace;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">Comando Remoto <span>TikTok</span></div>
-    <div class="subtitle">Abra perfis do TikTok direto no app do celular</div>
 
-    <div class="status-card">
-      <div class="status-row">
-        <span class="status-label">Conexão Firebase</span>
-        <span class="status-value">
-          <span id="dot-conn" class="dot offline"></span>
-          <span id="conn-text">Conectando...</span>
-        </span>
-      </div>
-      <div class="status-row">
-        <span class="status-label">Status do site</span>
-        <span class="status-value">
-          <span id="dot-status" class="dot offline"></span>
-          <span id="status-text">offline</span>
-        </span>
-      </div>
-      <div class="status-row">
-        <span class="status-label">Comando atual</span>
-        <span class="status-value">
-          <span id="command-display" class="command-display empty">(aguardando...)</span>
-        </span>
-      </div>
-    </div>
+<div class="container">
+    <h2>Abrir TikTok</h2>
+    <input type="text" id="username" placeholder="Ex: @usuario">
+    <br>
+    <button onclick="abrirTikTok()">Ver Perfil</button>
+    <div id="status">Aguardando comando do Python...</div>
+    <div id="log"></div>
+</div>
 
-    <div id="error-box" class="error"></div>
-
-    <div class="note">
-      <strong>Como funciona:</strong> Mantenha esta aba aberta no navegador do
-      celular. Quando o script Python enviar um nome de usuário, o app do TikTok
-      abrirá direto no perfil e esta página continuará online aguardando o
-      próximo comando.
-    </div>
-
-    <div class="footer">
-      Hospede no GitHub Pages · Controle via Python + Firebase<br />
-      <span id="log-line">Aguardando comando...</span>
-    </div>
-  </div>
-
-  <!-- SDK do Firebase v9 (modular CDN) -->
-  <script type="module">
+<!-- SDK do Firebase (modular CDN v10) -->
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getDatabase,
-      ref,
-      set,
-      onValue
+        getDatabase,
+        ref,
+        set,
+        onValue
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     // ✅ Configuração do Firebase (projeto: tiktokteladividida)
     const firebaseConfig = {
-      apiKey: "AIzaSyDFy7nOPfPj5lsPbJMb9hYZa36Vse9NwUA",
-      authDomain: "tiktokteladividida.firebaseapp.com",
-      databaseURL: "https://tiktokteladividida-default-rtdb.firebaseio.com",
-      projectId: "tiktokteladividida",
-      storageBucket: "tiktokteladividida.firebasestorage.app",
-      messagingSenderId: "501758978124",
-      appId: "1:501758978124:web:80db3f4d2c43eaa775ece9"
+        apiKey: "AIzaSyDFy7nOPfPj5lsPbJMb9hYZa36Vse9NwUA",
+        authDomain: "tiktokteladividida.firebaseapp.com",
+        databaseURL: "https://tiktokteladividida-default-rtdb.firebaseio.com",
+        projectId: "tiktokteladividida",
+        storageBucket: "tiktokteladividida.firebasestorage.app",
+        messagingSenderId: "501758978124",
+        appId: "1:501758978124:web:80db3f4d2c43eaa775ece9"
     };
 
-    // ----- Helpers de UI -----
-    const dotConn    = document.getElementById("dot-conn");
-    const connText   = document.getElementById("conn-text");
-    const dotStatus  = document.getElementById("dot-status");
-    const statusText = document.getElementById("status-text");
-    const cmdDisplay = document.getElementById("command-display");
-    const errorBox   = document.getElementById("error-box");
-    const logLine    = document.getElementById("log-line");
+    const app  = initializeApp(firebaseConfig);
+    const db   = getDatabase(app);
+    const statusRef  = ref(db, "status");
+    const commandRef = ref(db, "comando");
 
-    function setConn(state, label) {
-      dotConn.className = "dot " + state;
-      connText.textContent = label;
-    }
-    function showError(msg) {
-      errorBox.textContent = msg;
-      errorBox.style.display = "block";
-    }
+    // Helpers de UI
+    const inputField = document.getElementById("username");
+    const statusEl   = document.getElementById("status");
+    const logEl      = document.getElementById("log");
+
     function log(msg) {
-      logLine.textContent = msg;
-      console.log("[comando-remoto] " + msg);
+        const tempo = new Date().toLocaleTimeString("pt-BR");
+        logEl.textContent = "[" + tempo + "] " + msg;
+        console.log("[comando] " + msg);
     }
 
-    // ----- Inicialização do Firebase -----
-    try {
-      const app  = initializeApp(firebaseConfig);
-      const db   = getDatabase(app);
-      const statusRef  = ref(db, "status");
-      const commandRef = ref(db, "comando");
+    // Expõe a função abrirTikTok globalmente pro botão "Ver Perfil" usar
+    // (igual ao arquivo de referência), mas também permite que o Firebase
+    // chame automaticamente quando o Python enviar um comando.
+    window.abrirTikTok = function(userFromFirebase = null) {
+        let user = userFromFirebase
+            ? String(userFromFirebase)
+            : inputField.value;
 
-      // 1) Ao carregar: marca 'online' no nó status
-      await set(statusRef, "online");
-      statusText.textContent = "online";
-      dotStatus.className = "dot online";
-      setConn("online", "Conectado");
-      log("Conectado ao Firebase. Marcado como 'online'.");
+        user = (user || "").replace(/[@\s]/g, "");
 
-      // Marca offline ao fechar a aba
-      window.addEventListener("beforeunload", () => {
-        // set() síncrono best-effort
-        set(statusRef, "offline");
-      });
-
-      // 2) Escuta o nó 'comando' em tempo real
-      onValue(commandRef, (snapshot) => {
-        const comando = snapshot.val();
-        // Limpa exibição
-        cmdDisplay.textContent = comando || "(aguardando...)";
-        cmdDisplay.className = "command-display" + (comando ? "" : " empty");
-        dotStatus.className = "dot " + (comando ? "waiting" : "online");
-
-        // 3) Se chegou um comando (string não vazia), abre o app do TikTok
-        if (comando && typeof comando === "string" && comando.trim() !== "") {
-          const usuario = comando.trim();
-          // Tira caracteres inválidos para evitar path traversal
-          const limpo = usuario.replace(/[^a-zA-Z0-9._-]/g, "");
-          log("Comando recebido: @" + limpo + " → abrindo app do TikTok...");
-
-          // Reset imediato do comando (Firebase volta a "")
-          set(commandRef, "").catch((e) =>
-            log("Aviso: não foi possível resetar o comando: " + e.message)
-          );
-
-          // Estratégia A: tenta intent:// do Android (abre app direto,
-          // sem matar a página). Schemas snssdk1124 e tiktok:// são os
-          // deep links oficiais do app do TikTok no Android.
-          const usernameEncoded = encodeURIComponent(limpo);
-          const intentUrl =
-            "intent://www.tiktok.com/@" + usernameEncoded +
-            "#Intent;scheme=https;package=com.zhiliaoapp.musically;" +
-            "action=android.intent.action.VIEW;end;";
-
-          // Estratégia B (fallback): URL normal pra navegador
-          const webUrl = "https://www.tiktok.com/@" + usernameEncoded;
-
-          // Pequeno delay para garantir o reset do Firebase antes de abrir
-          setTimeout(() => {
-            // Tenta primeiro o intent:// — no Android com o app instalado,
-            // isso abre o app do TikTok direto (deep link). A página atual
-            // NÃO é destruída, continua rodando e escutando o Firebase.
-            let abriuApp = false;
-            try {
-              const iframe = document.createElement("iframe");
-              iframe.style.display = "none";
-              iframe.src = intentUrl;
-              document.body.appendChild(iframe);
-              abriuApp = true;
-              // Remove o iframe após 2s
-              setTimeout(() => {
-                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-              }, 2000);
-              log("Intent Android disparado. App do TikTok deve abrir.");
-            } catch (e) {
-              log("Intent falhou: " + e.message + " — tentando URL normal...");
-            }
-
-            // Se intent falhou (provavelmente PC/desktop), abre em nova aba
-            // como fallback. A página atual também continua online.
-            if (!abriuApp) {
-              window.open(webUrl, "_blank");
-              log("Abrindo em nova aba (fallback).");
-            }
-
-            // Feedback visual permanece na página
-            log("Aguardando próximo comando... (página ainda online)");
-          }, 150);
-        } else {
-          // comando vazio = reset/waiting
-          statusText.textContent = "online";
+        if (!user) {
+            if (!userFromFirebase) alert("Por favor, digite o nome de usuário.");
+            return;
         }
-      }, (error) => {
-        setConn("offline", "Erro de conexão");
-        showError(
-          "Não foi possível escutar o nó 'comando'. " +
-          "Verifique as Regras do Realtime Database (read/write = true). " +
-          "Erro: " + error.message
-        );
-      });
 
-    } catch (err) {
-      setConn("offline", "Falha ao conectar");
-      showError(
-        "Erro ao inicializar o Firebase: " + err.message +
-        " — Verifique se o firebaseConfig foi preenchido corretamente."
-      );
-    }
-  </script>
+        // Limpa caracteres inválidos
+        const limpo = user.replace(/[^a-zA-Z0-9._-]/g, "");
+        const urlTiktok = "https://www.tiktok.com/@" + encodeURIComponent(limpo);
+
+        log("Abrindo: " + urlTiktok);
+        statusEl.textContent = "Abrindo @" + limpo + " no app do TikTok...";
+
+        window.location.href = urlTiktok;
+
+        if (!userFromFirebase) inputField.value = "";
+    };
+
+    // 1) Ao carregar: marca 'online' no nó status
+    set(statusRef, "online").then(() => log("Site online — Firebase conectado."));
+    window.addEventListener("beforeunload", () => set(statusRef, "offline"));
+
+    // 2) Escuta o nó 'comando' em tempo real
+    onValue(commandRef, (snapshot) => {
+        const comando = snapshot.val();
+
+        if (comando && typeof comando === "string" && comando.trim() !== "") {
+            log("Comando recebido do Python: @" + comando);
+
+            // Preenche o campo visualmente (pro usuário ver, igual à referência)
+            inputField.value = "@" + comando;
+
+            // Simula digitação + clique após 1 segundo (UX igual à referência)
+            statusEl.textContent = "Comando recebido — abrindo em 1s...";
+            setTimeout(() => {
+                // Reseta o comando no Firebase (volta a "")
+                set(commandRef, "").catch((e) =>
+                    log("Aviso: não resetou o comando: " + e.message)
+                );
+
+                // Chama a mesma função do botão "Ver Perfil"
+                window.abrirTikTok(comando);
+            }, 1000);
+        }
+    }, (error) => {
+        log("Erro Firebase: " + error.message);
+        statusEl.textContent = "Erro de conexão com Firebase";
+    });
+</script>
+
 </body>
 </html>
