@@ -120,7 +120,7 @@
 <body>
   <div class="container">
     <div class="logo">Comando Remoto <span>TikTok</span></div>
-    <div class="subtitle">Abra perfis do TikTok a partir do seu PC</div>
+    <div class="subtitle">Abra perfis do TikTok direto no app do celular</div>
 
     <div class="status-card">
       <div class="status-row">
@@ -148,9 +148,10 @@
     <div id="error-box" class="error"></div>
 
     <div class="note">
-      <strong>Como funciona:</strong> Mantenha esta aba aberta. Quando o script
-      Python enviar um nome de usuário, o navegador abrirá o perfil do TikTok
-      automaticamente e o comando será resetado.
+      <strong>Como funciona:</strong> Mantenha esta aba aberta no navegador do
+      celular. Quando o script Python enviar um nome de usuário, o app do TikTok
+      abrirá direto no perfil e esta página continuará online aguardando o
+      próximo comando.
     </div>
 
     <div class="footer">
@@ -230,22 +231,26 @@
         cmdDisplay.className = "command-display" + (comando ? "" : " empty");
         dotStatus.className = "dot " + (comando ? "waiting" : "online");
 
-        // 3) Se chegou um comando (string não vazia), redireciona
+        // 3) Se chegou um comando (string não vazia), abre o app do TikTok
         if (comando && typeof comando === "string" && comando.trim() !== "") {
           const usuario = comando.trim();
           // Tira caracteres inválidos para evitar path traversal
           const limpo = usuario.replace(/[^a-zA-Z0-9._-]/g, "");
-          log("Comando recebido: " + usuario + " → abrindo @" + limpo);
+          const urlTiktok = "https://www.tiktok.com/@" + encodeURIComponent(limpo);
+          log("Comando recebido: @" + limpo + " → abrindo app do TikTok...");
 
-          // Reset imediato do comando
+          // Reset imediato do comando (Firebase volta a "")
           set(commandRef, "").catch((e) =>
             log("Aviso: não foi possível resetar o comando: " + e.message)
           );
 
-          // Pequeno delay para garantir o reset visual antes do redirect
+          // Abre em nova aba/janela — no Android, isso dispara o deep link
+          // do aplicativo do TikTok, e a página atual CONTINUA rodando
+          // (escutando o Firebase para o próximo comando).
           setTimeout(() => {
-            window.location.href =
-              "https://www.tiktok.com/@" + encodeURIComponent(limpo);
+            window.open(urlTiktok, "_blank");
+            // Feedback visual permanece na página
+            log("TikTok aberto em segundo plano. Aguardando próximo comando...");
           }, 150);
         } else {
           // comando vazio = reset/waiting
