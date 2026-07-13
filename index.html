@@ -236,7 +236,6 @@
           const usuario = comando.trim();
           // Tira caracteres inválidos para evitar path traversal
           const limpo = usuario.replace(/[^a-zA-Z0-9._-]/g, "");
-          const urlTiktok = "https://www.tiktok.com/@" + encodeURIComponent(limpo);
           log("Comando recebido: @" + limpo + " → abrindo app do TikTok...");
 
           // Reset imediato do comando (Firebase volta a "")
@@ -244,13 +243,48 @@
             log("Aviso: não foi possível resetar o comando: " + e.message)
           );
 
-          // Abre em nova aba/janela — no Android, isso dispara o deep link
-          // do aplicativo do TikTok, e a página atual CONTINUA rodando
-          // (escutando o Firebase para o próximo comando).
+          // Estratégia A: tenta intent:// do Android (abre app direto,
+          // sem matar a página). Schemas snssdk1124 e tiktok:// são os
+          // deep links oficiais do app do TikTok no Android.
+          const usernameEncoded = encodeURIComponent(limpo);
+          const intentUrl =
+            "intent://www.tiktok.com/@" + usernameEncoded +
+            "#Intent;scheme=https;package=com.zhiliaoapp.musically;" +
+            "action=android.intent.action.VIEW;end;";
+
+          // Estratégia B (fallback): URL normal pra navegador
+          const webUrl = "https://www.tiktok.com/@" + usernameEncoded;
+
+          // Pequeno delay para garantir o reset do Firebase antes de abrir
           setTimeout(() => {
-            window.open(urlTiktok, "_blank");
+            // Tenta primeiro o intent:// — no Android com o app instalado,
+            // isso abre o app do TikTok direto (deep link). A página atual
+            // NÃO é destruída, continua rodando e escutando o Firebase.
+            let abriuApp = false;
+            try {
+              const iframe = document.createElement("iframe");
+              iframe.style.display = "none";
+              iframe.src = intentUrl;
+              document.body.appendChild(iframe);
+              abriuApp = true;
+              // Remove o iframe após 2s
+              setTimeout(() => {
+                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+              }, 2000);
+              log("Intent Android disparado. App do TikTok deve abrir.");
+            } catch (e) {
+              log("Intent falhou: " + e.message + " — tentando URL normal...");
+            }
+
+            // Se intent falhou (provavelmente PC/desktop), abre em nova aba
+            // como fallback. A página atual também continua online.
+            if (!abriuApp) {
+              window.open(webUrl, "_blank");
+              log("Abrindo em nova aba (fallback).");
+            }
+
             // Feedback visual permanece na página
-            log("TikTok aberto em segundo plano. Aguardando próximo comando...");
+            log("Aguardando próximo comando... (página ainda online)");
           }, 150);
         } else {
           // comando vazio = reset/waiting
