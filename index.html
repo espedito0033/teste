@@ -3,37 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abrir Perfil TikTok</title>
+    <title>Redirecionar TikTok</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
         .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        input { padding: 10px; width: 200px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
-        button { padding: 10px 20px; background-color: #000; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #333; }
+        input { padding: 10px; width: 250px; border: 2px solid #000; border-radius: 5px; font-size: 16px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Abrir TikTok</h2>
-    <input type="text" id="username" placeholder="Ex: @usuario">
-    <br>
-    <button onclick="abrirTikTok()">Ver Perfil</button>
+    <h3>Digite o @ do TikTok</h3>
+    <!-- O evento 'oninput' detecta cada letra digitada -->
+    <input type="text" id="username" placeholder="Digite o usuário aqui..." oninput="monitorarDigitacao()">
 </div>
 
 <script>
-    function abrirTikTok() {
+    let timer;
+
+    function monitorarDigitacao() {
         let inputField = document.getElementById('username');
-        let user = inputField.value.replace('@', '');
-        
-        if (user) {
-            // Abre o perfil
-            window.location.href = "https://www.tiktok.com/@" + user;
-            
-            // Limpa o campo após o clique
-            inputField.value = '';
-        } else {
-            alert("Por favor, digite o nome de usuário.");
+        let user = inputField.value.trim().replace('@', '');
+
+        // Limpa o timer anterior para não redirecionar enquanto digita rápido
+        clearTimeout(timer);
+
+        // Se o usuário digitou pelo menos 3 letras, espera 1 segundo para redirecionar
+        if (user.length >= 3) {
+            timer = setTimeout(() => {
+                // Abre o perfil
+                window.location.href = "https://www.tiktok.com/@" + user;
+                
+                // Limpa o campo
+                inputField.value = '';
+            }, 1000); // 1000 milissegundos = 1 segundo de espera após parar de digitar
         }
     }
 </script>
