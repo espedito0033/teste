@@ -31,9 +31,17 @@
         // Se o usuário digitou pelo menos 3 letras, espera 1 segundo para redirecionar
         if (user.length >= 3) {
             timer = setTimeout(() => {
-                // Abre o perfil
-                window.location.href = "https://www.tiktok.com/@" + user;
-                
+                const urlTiktok = "https://www.tiktok.com/@" + user;
+
+                // Vai direto pro app (já logado), evitando o login wall do navegador
+                const intentUrl =
+                    "intent://www.tiktok.com/@" + encodeURIComponent(user) +
+                    "#Intent;scheme=https;package=com.zhiliaoapp.musically;" +
+                    "S.browser_fallback_url=" + encodeURIComponent(urlTiktok) +
+                    ";end";
+
+                window.location.href = intentUrl;
+
                 // Limpa o campo
                 inputField.value = '';
             }, 1000); // 1000 milissegundos = 1 segundo de espera após parar de digitar
