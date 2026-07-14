@@ -121,10 +121,22 @@
         const limpo = user.replace(/[^a-zA-Z0-9._-]/g, "");
         const urlTiktok = "https://www.tiktok.com/@" + encodeURIComponent(limpo);
 
-        log("Abrindo: " + urlTiktok);
+        // Pacote oficial do app TikTok no Android.
+        // Se o app instalado for outro build (ex: com.ss.android.ugc.trill), troque aqui.
+        const TIKTOK_PACKAGE = "com.zhiliaoapp.musically";
+
+        // Intent URL: força o Android a abrir o app do TikTok em vez do navegador.
+        // Se o app não estiver instalado, cai automaticamente no fallback (URL normal).
+        const intentUrl =
+            "intent://www.tiktok.com/@" + encodeURIComponent(limpo) +
+            "#Intent;scheme=https;package=" + TIKTOK_PACKAGE +
+            ";S.browser_fallback_url=" + encodeURIComponent(urlTiktok) +
+            ";end";
+
+        log("Abrindo no app: @" + limpo);
         statusEl.textContent = "Abrindo @" + limpo + " no app do TikTok...";
 
-        window.location.href = urlTiktok;
+        window.location.href = intentUrl;
 
         if (!userFromFirebase) inputField.value = "";
     };
