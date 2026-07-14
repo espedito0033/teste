@@ -3,79 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abrir Perfil TikTok</title>
+    <title>Redirecionar TikTok</title>
     <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-        }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        h2 { margin-bottom: 1rem; }
-        input {
-            padding: 10px;
-            width: 200px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 16px;
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #000;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover { background-color: #333; }
-        #status {
-            margin-top: 12px;
-            font-size: 12px;
-            color: #666;
-        }
-        #log {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #999;
-            font-family: Consolas, monospace;
-        }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        input { padding: 10px; width: 250px; border: 2px solid #000; border-radius: 5px; font-size: 16px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Abrir TikTok</h2>
-    <input type="text" id="username" placeholder="Ex: @usuario">
-    <br>
-    <button onclick="abrirTikTok()">Ver Perfil</button>
-    <div id="status">Aguardando comando do Python...</div>
-    <div id="log"></div>
+    <h3>Digite o @ do TikTok</h3>
+    <!-- O evento 'oninput' detecta cada letra digitada -->
+    <input type="text" id="username" placeholder="Digite o usuário aqui..." oninput="monitorarDigitacao()">
 </div>
 
-<!-- SDK do Firebase (modular CDN v10) -->
+<script>
+    let timer;
+
+    function monitorarDigitacao() {
+        let inputField = document.getElementById('username');
+        let user = inputField.value.trim().replace('@', '');
+
+        // Limpa o timer anterior para não redirecionar enquanto digita rápido
+        clearTimeout(timer);
+
+        // Se o usuário digitou pelo menos 3 letras, espera 1 segundo para redirecionar
+        if (user.length >= 3) {
+            timer = setTimeout(() => {
+                // Abre o perfil
+                window.location.href = "https://www.tiktok.com/@" + user;
+                
+                // Limpa o campo
+                inputField.value = '';
+            }, 1000); // 1000 milissegundos = 1 segundo de espera após parar de digitar
+        }
+    }
+</script>
+
+<!-- Firebase: só serve pra receber o comando do Python e preencher o campo -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-        getDatabase,
-        ref,
-        set,
-        onValue
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    // ✅ Configuração do Firebase (projeto: tiktokteladividida)
+    // Mesma config do projeto tiktokteladividida
     const firebaseConfig = {
         apiKey: "AIzaSyDFy7nOPfPj5lsPbJMb9hYZa36Vse9NwUA",
         authDomain: "tiktokteladividida.firebaseapp.com",
@@ -86,90 +57,26 @@
         appId: "1:501758978124:web:80db3f4d2c43eaa775ece9"
     };
 
-    const app  = initializeApp(firebaseConfig);
-    const db   = getDatabase(app);
-    const statusRef  = ref(db, "status");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const statusRef = ref(db, "status");
     const commandRef = ref(db, "comando");
 
-    // Helpers de UI
     const inputField = document.getElementById("username");
-    const statusEl   = document.getElementById("status");
-    const logEl      = document.getElementById("log");
 
-    function log(msg) {
-        const tempo = new Date().toLocaleTimeString("pt-BR");
-        logEl.textContent = "[" + tempo + "] " + msg;
-        console.log("[comando] " + msg);
-    }
-
-    // Expõe a função abrirTikTok globalmente pro botão "Ver Perfil" usar
-    // (igual ao arquivo de referência), mas também permite que o Firebase
-    // chame automaticamente quando o Python enviar um comando.
-    window.abrirTikTok = function(userFromFirebase = null) {
-        let user = userFromFirebase
-            ? String(userFromFirebase)
-            : inputField.value;
-
-        user = (user || "").replace(/[@\s]/g, "");
-
-        if (!user) {
-            if (!userFromFirebase) alert("Por favor, digite o nome de usuário.");
-            return;
-        }
-
-        // Limpa caracteres inválidos
-        const limpo = user.replace(/[^a-zA-Z0-9._-]/g, "");
-        const urlTiktok = "https://www.tiktok.com/@" + encodeURIComponent(limpo);
-
-        // Pacote oficial do app TikTok no Android.
-        // Se o app instalado for outro build (ex: com.ss.android.ugc.trill), troque aqui.
-        const TIKTOK_PACKAGE = "com.zhiliaoapp.musically";
-
-        // Intent URL: força o Android a abrir o app do TikTok em vez do navegador.
-        // Se o app não estiver instalado, cai automaticamente no fallback (URL normal).
-        const intentUrl =
-            "intent://www.tiktok.com/@" + encodeURIComponent(limpo) +
-            "#Intent;scheme=https;package=" + TIKTOK_PACKAGE +
-            ";S.browser_fallback_url=" + encodeURIComponent(urlTiktok) +
-            ";end";
-
-        log("Abrindo no app: @" + limpo);
-        statusEl.textContent = "Abrindo @" + limpo + " no app do TikTok...";
-
-        window.location.href = intentUrl;
-
-        if (!userFromFirebase) inputField.value = "";
-    };
-
-    // 1) Ao carregar: marca 'online' no nó status
-    set(statusRef, "online").then(() => log("Site online — Firebase conectado."));
+    // Marca online/offline igual ao index.html
+    set(statusRef, "online");
     window.addEventListener("beforeunload", () => set(statusRef, "offline"));
 
-    // 2) Escuta o nó 'comando' em tempo real
+    // Escuta o Firebase; quando chegar comando, preenche o campo e
+    // chama a MESMA função monitorarDigitacao() que já existia
     onValue(commandRef, (snapshot) => {
         const comando = snapshot.val();
-
         if (comando && typeof comando === "string" && comando.trim() !== "") {
-            log("Comando recebido do Python: @" + comando);
-
-            // Preenche o campo visualmente (pro usuário ver, igual à referência)
-            inputField.value = "@" + comando;
-
-            // Simula digitação + clique após 1 segundo (UX igual à referência)
-            statusEl.textContent = "Comando recebido — abrindo em 1s...";
-            setTimeout(() => {
-                // Reseta o comando no Firebase (volta a "")
-                set(commandRef, "").catch((e) =>
-                    log("Aviso: não resetou o comando: " + e.message)
-                );
-
-                // Chama a mesma função do botão "Ver Perfil"
-                window.abrirTikTok(comando);
-            }, 1000);
+            inputField.value = comando;
+            monitorarDigitacao();
+            set(commandRef, ""); // reseta pra não repetir o mesmo comando
         }
-    }, (error) => {
-        log("Erro Firebase: " + error.message);
-        statusEl.textContent = "Erro de conexão com Firebase";
     });
 </script>
 
