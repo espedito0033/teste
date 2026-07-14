@@ -31,61 +31,14 @@
         // Se o usuário digitou pelo menos 3 letras, espera 1 segundo para redirecionar
         if (user.length >= 3) {
             timer = setTimeout(() => {
-                const urlTiktok = "https://www.tiktok.com/@" + user;
-
-                // Vai direto pro app (já logado), evitando o login wall do navegador
-                const intentUrl =
-                    "intent://www.tiktok.com/@" + encodeURIComponent(user) +
-                    "#Intent;scheme=https;package=com.zhiliaoapp.musically;" +
-                    "S.browser_fallback_url=" + encodeURIComponent(urlTiktok) +
-                    ";end";
-
-                window.location.href = intentUrl;
-
+                // Abre o perfil
+                window.location.href = "https://www.tiktok.com/@" + user;
+                
                 // Limpa o campo
                 inputField.value = '';
             }, 1000); // 1000 milissegundos = 1 segundo de espera após parar de digitar
         }
     }
-</script>
-
-<!-- Firebase: só serve pra receber o comando do Python e preencher o campo -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    // Mesma config do projeto tiktokteladividida
-    const firebaseConfig = {
-        apiKey: "AIzaSyDFy7nOPfPj5lsPbJMb9hYZa36Vse9NwUA",
-        authDomain: "tiktokteladividida.firebaseapp.com",
-        databaseURL: "https://tiktokteladividida-default-rtdb.firebaseio.com",
-        projectId: "tiktokteladividida",
-        storageBucket: "tiktokteladividida.firebasestorage.app",
-        messagingSenderId: "501758978124",
-        appId: "1:501758978124:web:80db3f4d2c43eaa775ece9"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const statusRef = ref(db, "status");
-    const commandRef = ref(db, "comando");
-
-    const inputField = document.getElementById("username");
-
-    // Marca online/offline igual ao index.html
-    set(statusRef, "online");
-    window.addEventListener("beforeunload", () => set(statusRef, "offline"));
-
-    // Escuta o Firebase; quando chegar comando, preenche o campo e
-    // chama a MESMA função monitorarDigitacao() que já existia
-    onValue(commandRef, (snapshot) => {
-        const comando = snapshot.val();
-        if (comando && typeof comando === "string" && comando.trim() !== "") {
-            inputField.value = comando;
-            monitorarDigitacao();
-            set(commandRef, ""); // reseta pra não repetir o mesmo comando
-        }
-    });
 </script>
 
 </body>
